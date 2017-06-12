@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">SIRAST</string>
+    <!-- Strings related to login -->
+    <string name="action_sign_in_short">Login</string>
+    <string name="error_invalid_login">Login inválido (Deve possuir 6 ou mais caracteres)</string>
+    <string name="error_invalid_password">Senha inválida (Deve possuir 6 ou mais caracteres)</string>
+    <string name="error_incorrect_password">Senha incorreta</string>
+    <string name="error_field_required">Campo obrigatório</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email completions." </string>
+    <string name="title_activity_menu">MenuActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_start_master">StartMasterActivity</string>
+    <string name="add">Adicionar</string>
+    <string name="remove">Remover</string>
+    <string name="social">Área Social</string>
+    <string name="contact">Contato</string>
+    <string name="email">sirastmobile@gmail.com</string>
+    <string name="share">Compartilhar</string>
+    <string name="nick_name">Apelido</string>
+    <string name="number">DDD + Número</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password (optional)</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="user">Usuário</string>
+    <string name="password">Senha</string>
+    <string name="title_email">Email</string>
+    <string name="register">CADASTRO</string>
+    <string name="save">SALVAR</string>
+</resources>

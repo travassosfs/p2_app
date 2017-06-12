@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_add"
+            android:icon="@drawable/add"
+            android:title="@string/add" />
+        <item
+            android:id="@+id/nav_remove"
+            android:icon="@drawable/remove"
+            android:title="@string/remove" />
+    </group>
+
+    <item android:title="@string/social">
+        <menu>
+            <item
+                android:id="@+id/nav_share"
+                android:icon="@android:drawable/ic_menu_share"
+                android:title="@string/share" />
+            <item
+                android:id="@+id/nav_contact"
+                android:icon="@drawable/mail"
+                android:title="@string/contact" />
+        </menu>
+    </item>
+
+</menu>
