@@ -17,6 +17,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.fstravassos.sirast.master.CreateAccountActivity;
 import com.fstravassos.sirast.master.Session;
+import com.fstravassos.sirast.master.database.MasterDataBase;
 import com.fstravassos.sirast.master.view.StartMasterActivity;
 
 import org.json.JSONArray;
@@ -32,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText mEtPassword;
     ImageView mIvLogin;
     TextView mTvCreateAccount;
+    MasterDataBase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loginService(String url, final String user, final String password) {
         RequestQueue queue = Volley.newRequestQueue(this);
+        db = new MasterDataBase(this);
 
         StringRequest putRequest = new StringRequest(Request.Method.PUT, url,
                 new Response.Listener<String>()
@@ -69,6 +72,7 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         parserLogin(response);
+                        db.deleteAllSlavers();
                         startActivity(new Intent(LoginActivity.this, StartMasterActivity.class));
                         finish();
                     }

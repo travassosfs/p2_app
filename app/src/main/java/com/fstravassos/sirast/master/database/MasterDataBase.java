@@ -111,6 +111,13 @@ public class MasterDataBase extends SQLiteOpenHelper {
         return items;
     }
 
+    public void deleteAllSlavers() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        db.delete(TABLE, null, null);
+        db.close();
+    }
+
     public void deleteSlaver(Slavery slave) {
         SQLiteDatabase db = this.getWritableDatabase();
 

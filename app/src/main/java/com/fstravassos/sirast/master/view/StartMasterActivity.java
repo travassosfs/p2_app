@@ -16,12 +16,23 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.fstravassos.sirast.LoginActivity;
 import com.fstravassos.sirast.R;
+import com.fstravassos.sirast.SirastUtils;
+import com.fstravassos.sirast.master.CreateAccountActivity;
 import com.fstravassos.sirast.master.Session;
 import com.fstravassos.sirast.master.models.Slavery;
 import com.fstravassos.sirast.master.database.MasterDataBase;
@@ -34,6 +45,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class StartMasterActivity extends AppCompatActivity
         implements OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener, IListenerReceiver {
@@ -51,21 +71,16 @@ public class StartMasterActivity extends AppCompatActivity
     SupportMapFragment mapFragment;
     TextView mTvAdding;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_start_master);
-        sms.setmListener(this);
-        db = new MasterDataBase(this);
-        mTvAdding = (TextView) findViewById(R.id.tv_adding);
-        ft = getFragmentManager().beginTransaction();
+    private void setPermissions(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             ActivityCompat.requestPermissions(this, new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.SEND_SMS,
                     Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
         }
+    }
 
+    private void setToolbarAndFloatButton() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -87,9 +102,6 @@ public class StartMasterActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
     private void restartFragmentTransaction(String tag) {
@@ -99,6 +111,72 @@ public class StartMasterActivity extends AppCompatActivity
             ft.remove(prev);
         }
         ft.addToBackStack(null);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_start_master);
+        sms.setmListener(this);
+        db = new MasterDataBase(this);
+        mTvAdding = (TextView) findViewById(R.id.tv_adding);
+        ft = getFragmentManager().beginTransaction();
+
+        setPermissions();
+        setToolbarAndFloatButton();
+        loadSlavers();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void parseSlavers(String result) {
+
+        try {
+            JSONArray jsonObj = new JSONArray(result);
+
+            for (int i = 0; i < jsonObj.length(); i++) {
+                JSONObject c = jsonObj.getJSONObject(i);
+
+                String name = c.getString("usuario");
+                String number = c.getString("numero");
+
+                Slavery slave = new Slavery();
+                slave.setName(name);
+                slave.setNumber(number);
+                db.addSlaver(slave);
+            }
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadSlavers() {
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        String url = SirastUtils.mUrl + "/user/slavers?userId="+Session.mId;
+
+        JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>()
+                {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        parseSlavers(response.toString());
+                    }
+                }
+                ,
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String msg = error.getLocalizedMessage() != null ? error.networkResponse.statusCode +"" : "Erro de serviço ao adicionar veículo";
+                        Log.e("Error.Response", msg);
+                    }
+                }
+        );
+
+        queue.add(getRequest);
     }
 
     @Override
@@ -130,8 +208,6 @@ public class StartMasterActivity extends AppCompatActivity
         this.number = number;
         this.name = name;
 
-//        ActivityCompat.requestPermissions(this,new String[]{
-//                Manifest.permission.SEND_SMS},1);
         sms.sendMsg(number, "register sirast slave");
     }
 
@@ -154,12 +230,48 @@ public class StartMasterActivity extends AppCompatActivity
             slave.setName(name);
             slave.setNumber(number);
             db.addSlaver(slave);
+            addSlaverService(slave);
         }
+    }
+
+    private void addSlaverService(final Slavery slave) {
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        StringRequest putRequest = new StringRequest(Request.Method.POST, SirastUtils.mUrl + "/user/slavers",
+                new Response.Listener<String>(){
+                    @Override
+                    public void onResponse(String response) {
+                        //startActivity(new Intent(CreateAccountActivity.this, LoginActivity.class));
+                        //finish();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String msg = error.getLocalizedMessage() != null ? error.networkResponse.statusCode +"" : "Erro de serviço ao adicionar veículo";
+                        Log.e("Error.Response", msg);
+                    }
+                }
+        ){
+
+            @Override
+            protected Map<String, String> getParams()
+            {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("number", slave.getNumber());
+                params.put("userName", slave.getName());
+                params.put("idMaster", Session.mId);
+
+                return params;
+            }
+        };
+
+        queue.add(putRequest);
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+            DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
